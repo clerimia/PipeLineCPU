@@ -1,0 +1,118 @@
+`timescale 1ns / 1ps
+
+// ID/EX流水线寄存器
+// 功能：在译码和执行阶段之间传递数据和控制信号
+module ID_EX_Register(
+    input CLK,                      // 时钟信号
+    input RST,                      // 复位信号
+    input ID_EX_Flush,              // 清空信号
+    
+    // 输入：控制信号
+    input RegWre_in,
+    input [1:0] RegDst_in,
+    input ALUSrcA_in,
+    input ALUSrcB_in,
+    input [2:0] ALUOp_in,
+    input mRD_in,
+    input mWR_in,
+    input DBDataSrc_in,
+    input WrRegDSrc_in,
+    
+    // 输入：数据
+    input [31:0] PC_in,
+    input [31:0] ReadData1_in,
+    input [31:0] ReadData2_in,
+    input [31:0] extend_in,
+    input [4:0] rs_in,
+    input [4:0] rt_in,
+    input [4:0] rd_in,
+    input [4:0] sa_in,
+    
+    // 输出：控制信号
+    output reg RegWre_out,
+    output reg [1:0] RegDst_out,
+    output reg ALUSrcA_out,
+    output reg ALUSrcB_out,
+    output reg [2:0] ALUOp_out,
+    output reg mRD_out,
+    output reg mWR_out,
+    output reg DBDataSrc_out,
+    output reg WrRegDSrc_out,
+    
+    // 输出：数据
+    output reg [31:0] PC_out,
+    output reg [31:0] ReadData1_out,
+    output reg [31:0] ReadData2_out,
+    output reg [31:0] extend_out,
+    output reg [4:0] rs_out,
+    output reg [4:0] rt_out,
+    output reg [4:0] rd_out,
+    output reg [4:0] sa_out
+);
+
+    initial begin
+        RegWre_out = 0;
+        RegDst_out = 0;
+        ALUSrcA_out = 0;
+        ALUSrcB_out = 0;
+        ALUOp_out = 0;
+        mRD_out = 0;
+        mWR_out = 0;
+        DBDataSrc_out = 0;
+        WrRegDSrc_out = 0;
+        PC_out = 0;
+        ReadData1_out = 0;
+        ReadData2_out = 0;
+        extend_out = 0;
+        rs_out = 0;
+        rt_out = 0;
+        rd_out = 0;
+        sa_out = 0;
+    end
+
+    always @(posedge CLK or negedge RST) begin
+        if (!RST || ID_EX_Flush) begin
+            // 复位或清空时，清除所有控制信号和数据
+            RegWre_out <= 0;
+            RegDst_out <= 0;
+            ALUSrcA_out <= 0;
+            ALUSrcB_out <= 0;
+            ALUOp_out <= 0;
+            mRD_out <= 0;
+            mWR_out <= 0;
+            DBDataSrc_out <= 0;
+            WrRegDSrc_out <= 0;
+            PC_out <= 0;
+            ReadData1_out <= 0;
+            ReadData2_out <= 0;
+            extend_out <= 0;
+            rs_out <= 0;
+            rt_out <= 0;
+            rd_out <= 0;
+            sa_out <= 0;
+        end
+        else begin
+            // 传递控制信号
+            RegWre_out <= RegWre_in;
+            RegDst_out <= RegDst_in;
+            ALUSrcA_out <= ALUSrcA_in;
+            ALUSrcB_out <= ALUSrcB_in;
+            ALUOp_out <= ALUOp_in;
+            mRD_out <= mRD_in;
+            mWR_out <= mWR_in;
+            DBDataSrc_out <= DBDataSrc_in;
+            WrRegDSrc_out <= WrRegDSrc_in;
+            
+            // 传递数据
+            PC_out <= PC_in;
+            ReadData1_out <= ReadData1_in;
+            ReadData2_out <= ReadData2_in;
+            extend_out <= extend_in;
+            rs_out <= rs_in;
+            rt_out <= rt_in;
+            rd_out <= rd_in;
+            sa_out <= sa_in;
+        end
+    end
+
+endmodule
