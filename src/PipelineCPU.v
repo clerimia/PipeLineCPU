@@ -31,7 +31,8 @@ module PipelineCPU(
     wire [31:0] nextPC;
     wire PC_Write;              // 流水线暂停控制
     wire PCWre;
-    reg [1:0] PCSrc;            // PC源选择控制
+    wire [1:0] PCSrc;           // PC源选择控制（来自分支单元）
+    wire [31:0] Branch_ReadData1, Branch_ReadData2;  // 分支单元前推后的数据
     
     // IF/ID流水线寄存器信号
     wire IF_ID_Write;
@@ -102,75 +103,6 @@ module PipelineCPU(
     
     // 默认PCWre为1（流水线始终运行，除非halt）
     assign PCWre = (ID_op != 6'b111111) ? 1 : 0;
-    
-    // ========================================================================
-    // PCSrc生成逻辑（在ID阶段判断分支/跳转）
-    // ========================================================================
-    // ID阶段分支比较的前推逻辑
-    reg [31:0] Branch_ReadData1, Branch_ReadData2;
-    
-    always @(*) begin
-        // 默认使用寄存器堆读出的值
-        Branch_ReadData1 = ReadData1;
-        Branch_ReadData2 = ReadData2;
-        
-        // MEM阶段前推到ID阶段（用于分支指令）
-        if (EX_MEM_RegWre && EX_MEM_WriteReg != 0) begin
-            if (EX_MEM_WriteReg == ID_rs)
-                Branch_ReadData1 = EX_MEM_ALU_result;
-            if (EX_MEM_WriteReg == ID_rt)
-                Branch_ReadData2 = EX_MEM_ALU_result;
-        end
-    end
-    
-    always @(*) begin
-        PCSrc = 2'b00;  // 默认：PC+4
-        
-        case(ID_op)
-            6'b111000: begin  // j指令
-                PCSrc = 2'b11;  // 跳转到{PC[31:28], addr, 2'b00}
-            end
-            
-            6'b111010: begin  // jal指令
-                PCSrc = 2'b11;  // 跳转到{PC[31:28], addr, 2'b00}
-            end
-            
-            6'b111001: begin  // jr指令
-                PCSrc = 2'b10;  // 跳转到rs寄存器的值
-            end
-            
-            6'b110100: begin  // beq指令
-                // 在ID阶段比较rs和rt（使用前推后的值）
-                if (Branch_ReadData1 == Branch_ReadData2) begin
-                    PCSrc = 2'b01;  // 分支跳转：PC+4+offset*4
-                end else begin
-                    PCSrc = 2'b00;  // 不跳转：PC+4
-                end
-            end
-            
-            6'b110101: begin  // bne指令
-                // 在ID阶段比较rs和rt（使用前推后的值）
-                if (Branch_ReadData1 != Branch_ReadData2) begin
-                    PCSrc = 2'b01;  // 分支跳转：PC+4+offset*4
-                end else begin
-                    PCSrc = 2'b00;  // 不跳转：PC+4
-                end
-            end
-            
-            6'b110110: begin  // bltz指令
-                // 在ID阶段判断rs是否小于0（使用前推后的值）
-                if (Branch_ReadData1[31] == 1) begin  // 符号位为1表示负数
-                    PCSrc = 2'b01;  // 分支跳转：PC+4+offset*4
-                end else begin
-                    PCSrc = 2'b00;  // 不跳转：PC+4
-                end
-            end
-            
-            default: begin
-                PCSrc = 2'b00;  // 默认：PC+4
-            end
-        endcase
-    end
 
     // ========================================================================
     // 1. 取指阶段 (IF - Instruction Fetch)
@@ -253,6 +185,21 @@ module PipelineCPU(
         .immediate(immediate),
         .ExtSel(ExtSel_ID),
         .extendImmediate(extend)
+    );
+    
+    // 分支判断单元（在ID阶段判断分支/跳转）
+    BranchUnit BranchUnit_inst(
+        .op(ID_op),
+        .rs(ID_rs),
+        .rt(ID_rt),
+        .ReadData1(ReadData1),
+        .ReadData2(ReadData2),
+        .EX_MEM_ALU_result(EX_MEM_ALU_result),
+        .EX_MEM_WriteReg(EX_MEM_WriteReg),
+        .EX_MEM_RegWre(EX_MEM_RegWre),
+        .PCSrc(PCSrc),
+        .Branch_ReadData1(Branch_ReadData1),
+        .Branch_ReadData2(Branch_ReadData2)
     );
     
     // ID/EX流水线寄存器
@@ -437,7 +384,7 @@ module PipelineCPU(
         .immediate(extend),
         .addr(addr),
         .curPC(pcAdd_curPC),
-        .rs(ReadData1),
+        .rs(Branch_ReadData1),
         .nextPC(nextPC)
     );
 

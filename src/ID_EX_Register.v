@@ -5,49 +5,49 @@
 module ID_EX_Register(
     input CLK,                      // 时钟信号
     input RST,                      // 复位信号
-    input ID_EX_Flush,              // 清空信号
+    input ID_EX_Flush,              // 清空信号（用于分支预测失败时清空流水线）
     
-    // 输入：控制信号
-    input RegWre_in,
-    input [1:0] RegDst_in,
-    input ALUSrcA_in,
-    input ALUSrcB_in,
-    input [2:0] ALUOp_in,
-    input mRD_in,
-    input mWR_in,
-    input DBDataSrc_in,
-    input WrRegDSrc_in,
+    // 输入：指令控制信号
+    input RegWre_in,                // 寄存器写使能信号
+    input [1:0] RegDst_in,          // 寄存器写入目标选择信号
+    input ALUSrcA_in,               // ALU操作数A源选择信号
+    input ALUSrcB_in,               // ALU操作数B源选择信号
+    input [2:0] ALUOp_in,           // ALU操作码
+    input mRD_in,                   // 内存读使能信号
+    input mWR_in,                   // 内存写使能信号
+    input DBDataSrc_in,             // 数据总线数据源选择信号
+    input WrRegDSrc_in,             // 写入寄存器的数据源选择信号
     
     // 输入：数据
-    input [31:0] PC_in,
-    input [31:0] ReadData1_in,
-    input [31:0] ReadData2_in,
-    input [31:0] extend_in,
-    input [4:0] rs_in,
-    input [4:0] rt_in,
-    input [4:0] rd_in,
-    input [4:0] sa_in,
+    input [31:0] PC_in,             // 程序计数器值
+    input [31:0] ReadData1_in,      // 寄存器文件读取数据1
+    input [31:0] ReadData2_in,      // 寄存器文件读取数据2
+    input [31:0] extend_in,         // 符号扩展后的立即数
+    input [4:0] rs_in,              // 源寄存器rs索引
+    input [4:0] rt_in,              // 源寄存器rt索引
+    input [4:0] rd_in,              // 目标寄存器rd索引
+    input [4:0] sa_in,              // 移位量
     
-    // 输出：控制信号
-    output reg RegWre_out,
-    output reg [1:0] RegDst_out,
-    output reg ALUSrcA_out,
-    output reg ALUSrcB_out,
-    output reg [2:0] ALUOp_out,
-    output reg mRD_out,
-    output reg mWR_out,
-    output reg DBDataSrc_out,
-    output reg WrRegDSrc_out,
+    // 输出：指令控制信号
+    output reg RegWre_out,          // 寄存器写使能信号
+    output reg [1:0] RegDst_out,    // 寄存器写入目标选择信号
+    output reg ALUSrcA_out,         // ALU操作数A源选择信号
+    output reg ALUSrcB_out,         // ALU操作数B源选择信号
+    output reg [2:0] ALUOp_out,     // ALU操作码
+    output reg mRD_out,             // 内存读使能信号
+    output reg mWR_out,             // 内存写使能信号
+    output reg DBDataSrc_out,       // 数据总线数据源选择信号
+    output reg WrRegDSrc_out,       // 写入寄存器的数据源选择信号
     
     // 输出：数据
-    output reg [31:0] PC_out,
-    output reg [31:0] ReadData1_out,
-    output reg [31:0] ReadData2_out,
-    output reg [31:0] extend_out,
-    output reg [4:0] rs_out,
-    output reg [4:0] rt_out,
-    output reg [4:0] rd_out,
-    output reg [4:0] sa_out
+    output reg [31:0] PC_out,       // 程序计数器值
+    output reg [31:0] ReadData1_out, // 寄存器文件读取数据1
+    output reg [31:0] ReadData2_out, // 寄存器文件读取数据2
+    output reg [31:0] extend_out,   // 符号扩展后的立即数
+    output reg [4:0] rs_out,        // 源寄存器rs索引
+    output reg [4:0] rt_out,        // 源寄存器rt索引
+    output reg [4:0] rd_out,        // 目标寄存器rd索引
+    output reg [4:0] sa_out         // 移位量
 );
 
     initial begin

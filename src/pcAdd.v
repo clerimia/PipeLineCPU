@@ -24,8 +24,8 @@ module pcAdd(
         else begin
             pc = curPC + 4; // pc接受下一条指令地址
             case(PCSrc)
-                2'b00: nextPC = curPC + 4;
-                2'b01: nextPC = curPC + 4 + (immediate << 2);
+                2'b00: nextPC = pc;
+                2'b01: nextPC = pc + (immediate << 2);
                 2'b10: nextPC = rs;
                 2'b11: nextPC = {pc[31:28],addr,2'b00}; // 4(PC对齐)+26(32-6)+2(固定对齐4的倍数)
             endcase
