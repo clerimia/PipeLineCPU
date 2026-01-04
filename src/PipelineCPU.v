@@ -365,6 +365,7 @@ module PipelineCPU(
         .EX_RegWre(ID_EX_RegWre),
         .MEM_WriteReg(EX_MEM_WriteReg),
         .MEM_RegWre(EX_MEM_RegWre),
+        .MEM_mRD(EX_MEM_mRD),
         .PC_Write(PC_Write),
         .IF_ID_Write(IF_ID_Write),
         .IF_Flush(IF_Flush_hazard),   // 连接到hazard信号，最终IF_Flush由组合逻辑生成
